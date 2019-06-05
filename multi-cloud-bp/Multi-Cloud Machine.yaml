@@ -1,0 +1,85 @@
+formatVersion: 1
+inputs:
+  SelectCloud:
+    type: string
+    enum:
+      - 'env:aws'
+      - 'env:azure'
+  SelectCloud2:
+    type: string
+    enum:
+      - 'env:aws'
+      - 'env:azure'
+  hostname1:
+    type: string
+  hostname2:
+    type: string
+  user:
+    type: string
+    title: Username for SSH
+    description: The username you would like to have for the installation.
+    default: demouser
+  sshkey:
+    type: string
+    encrypted: true
+    title: Enter SSH Key.
+    description: The SSH-Key for connectivity
+resources:
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      image: Ubuntu
+      flavor: Medium
+      newName: '${input.hostname1}'
+      cloudConfig: |
+        #cloudconfig
+        hostname: ${input.hostname1}
+
+        users:
+          - name: ${input.user}
+            ssh-authorized-keys:
+             - ${input.sshkey}         
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+          
+        packages:
+          - apache2
+          
+        runcmd:
+          - echo "This file was created by Cloud-Init in environment " ${input.SelectCloud} >> /tmp/environment.txt  
+      constraints:
+        - tag: '${input.SelectCloud}'
+  Cloud_Machine_2:
+    type: Cloud.Machine
+    metadata:
+      layoutPosition:
+        - 0
+        - 1
+    properties:
+      image: Ubuntu
+      flavor: Medium
+      newName: '${input.hostname2}'
+      cloudConfig: |
+        #cloudconfig
+        hostname: ${input.hostname2}
+
+        users:
+          - name: ${input.user}
+            ssh-authorized-keys:
+             - ${input.sshkey}         
+            sudo: ['ALL=(ALL) NOPASSWD:ALL']
+            groups: sudo
+            shell: /bin/bash
+            
+        packages:
+          - nginx
+          
+        runcmd:
+          - echo "This file was created by Cloud-Init in environment " ${input.SelectCloud2} >> /tmp/environment.txt  
+      constraints:
+        - tag: '${input.SelectCloud2}'
